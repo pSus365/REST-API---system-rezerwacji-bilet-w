@@ -111,7 +111,7 @@ class ReservationServiceTest {
 
         verify(eventRepository, never()).save(any(Event.class));
         verify(reservationRepository, never()).save(any(Reservation.class));
-        verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), any());
+        verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), any(Object.class));
     }
 
     @Test
@@ -124,6 +124,6 @@ class ReservationServiceTest {
 
         verify(appUserRepository, never()).findById(anyLong());
         verify(reservationRepository, never()).save(any(Reservation.class));
-        verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), any());
+        verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), any(Object.class));
     }
 }
