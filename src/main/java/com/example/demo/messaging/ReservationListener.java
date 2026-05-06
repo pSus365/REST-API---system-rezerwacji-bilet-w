@@ -1,6 +1,5 @@
 package com.example.demo.messaging;
 
-import com.example.demo.model.Reservation;
 import com.example.demo.model.ReservationStatus;
 import com.example.demo.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
