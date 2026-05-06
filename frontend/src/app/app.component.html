@@ -1,0 +1,46 @@
+<div class="terminal-container">
+  
+  <div class="section-divider">======================== [SEKCJA 1: SYSTEM AUTHENTICATION] ========================</div>
+  <div>
+    <p>Wprowadź poświadczenia dostępu:</p>
+    <input type="text" [(ngModel)]="username" placeholder="Username" />
+    <input type="password" [(ngModel)]="password" placeholder="Password" />
+    <button (click)="handleLogin()">[ AUTHENTICATE ]</button>
+  </div>
+  
+  @if (authService.token()) {
+    <div style="margin-top: 10px;">
+      <p>CURRENT_JWT_TOKEN:</p>
+      <code style="word-break: break-all;">{{ authService.token() }}</code>
+    </div>
+  } @else {
+    <p class="error-text">Brak aktywnego tokena JWT. Zaloguj się.</p>
+  }
+
+  <div class="section-divider">======================== [SEKCJA 2: API DATA EXECUTOR] ========================</div>
+  <div>
+    <button (click)="fetchEvents()">[ POBIERZ WYDARZENIA ]</button>
+    
+    @if (events()) {
+      <pre>{{ events() | json }}</pre>
+    }
+  </div>
+
+  <div style="margin-top: 20px;">
+    <p>Utwórz nową rezerwację:</p>
+    <input type="number" [(ngModel)]="eventId" placeholder="Event ID" />
+    <input type="number" [(ngModel)]="requestedTickets" placeholder="Ilość biletów" />
+    <button (click)="submitReservation()">[ WYŚLIJ REQUEST REZERWACJI ]</button>
+  </div>
+
+  <div class="section-divider">======================== [SEKCJA 3: DEVELOPER DEBUG CONSOLE] ========================</div>
+  <div class="debug-console">
+    @for (log of debugLogs(); track $index) {
+      <div [class.error-text]="log.startsWith('[ERROR]')">{{ log }}</div>
+    }
+    @if (debugLogs().length === 0) {
+      <div>Brak wpisów w logach...</div>
+    }
+  </div>
+
+</div>

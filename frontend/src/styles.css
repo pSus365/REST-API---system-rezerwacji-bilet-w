@@ -1,0 +1,55 @@
+/* You can add global styles to this file, and also import other style files */
+body {
+    background-color: black;
+    color: #00FF00;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 20px;
+}
+
+input {
+    background-color: black;
+    color: #00FF00;
+    border: 1px solid #00FF00;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 5px;
+    margin: 5px 0;
+}
+
+button {
+    background-color: black;
+    color: #00FF00;
+    border: 1px solid #00FF00;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #00FF00;
+    color: black;
+}
+
+pre {
+    background-color: #111;
+    border: 1px solid #00FF00;
+    padding: 10px;
+    overflow-x: auto;
+}
+
+.section-divider {
+    color: #00FF00;
+    margin: 20px 0;
+}
+
+.debug-console {
+    border: 1px solid #00FF00;
+    padding: 10px;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.error-text {
+    color: red;
+}
