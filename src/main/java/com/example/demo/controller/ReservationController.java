@@ -27,4 +27,9 @@ public class ReservationController {
         ReservationResponseDTO response = reservationService.getReservation(id);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping
+    public ResponseEntity<java.util.List<ReservationResponseDTO>> getAllReservations() {
+        return ResponseEntity.ok(reservationService.getAllReservations());
+    }
 }

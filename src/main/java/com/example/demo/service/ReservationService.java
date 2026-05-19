@@ -73,4 +73,15 @@ public class ReservationService {
                 .status(reservation.getStatus())
                 .build();
     }
+
+    public java.util.List<ReservationResponseDTO> getAllReservations() {
+        return reservationRepository.findAll().stream().map(reservation ->
+                ReservationResponseDTO.builder()
+                        .id(reservation.getId())
+                        .eventName(reservation.getEvent().getName())
+                        .username(reservation.getUser().getUsername())
+                        .status(reservation.getStatus())
+                        .build()
+        ).toList();
+    }
 }

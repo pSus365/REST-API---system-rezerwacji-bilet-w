@@ -21,6 +21,7 @@ export class AppComponent {
 
   // Data state
   events = signal<any>(null);
+  reservations = signal<any>(null);
   eventId = '';
   requestedTickets = 1;
 
@@ -47,6 +48,19 @@ export class AppComponent {
       next: (data) => {
         this.log(`Pobrano wydarzenia. Status: 200 OK`);
         this.events.set(data);
+      },
+      error: (err: HttpErrorResponse) => this.log(`HTTP ${err.status} - ${err.message}`, true)
+    });
+  }
+
+  fetchReservations() {
+    this.log(`Wysłano GET /api/reservations...`);
+    this.http.get('http://localhost:8080/api/reservations', {
+      headers: { Authorization: `Bearer ${this.authService.token()}` }
+    }).subscribe({
+      next: (data) => {
+        this.log(`Pobrano rezerwacje. Status: 200 OK`);
+        this.reservations.set(data);
       },
       error: (err: HttpErrorResponse) => this.log(`HTTP ${err.status} - ${err.message}`, true)
     });

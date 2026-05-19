@@ -26,11 +26,35 @@
     }
   </div>
 
+  <div style="margin-top: 20px; border: 1px dashed #00FF00; padding: 15px; max-width: 500px;">
+    <p style="margin-top: 0;">> KREATOR NOWEJ REZERWACJI</p>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label>> WYBIERZ WYDARZENIE:</label>
+        <select [(ngModel)]="eventId" style="background: black; color: #00FF00; border: 1px solid #00FF00; padding: 5px; width: 250px; font-family: inherit; cursor: pointer;">
+          <option value="" disabled>-- BRAK WYDARZEŃ --</option>
+          @for (event of events(); track event.id) {
+            <option [value]="event.id">[{{ event.id }}] {{ event.name }} (Dostępne: {{ event.availableTickets }})</option>
+          }
+        </select>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <label>> ILOŚĆ BILETÓW:</label>
+        <input type="number" [(ngModel)]="requestedTickets" min="1" style="width: 238px;" />
+      </div>
+    </div>
+
+    <button (click)="submitReservation()" style="width: 100%;">[ ZATWIERDŹ TRANSAKCJĘ ]</button>
+  </div>
+
   <div style="margin-top: 20px;">
-    <p>Utwórz nową rezerwację:</p>
-    <input type="number" [(ngModel)]="eventId" placeholder="Event ID" />
-    <input type="number" [(ngModel)]="requestedTickets" placeholder="Ilość biletów" />
-    <button (click)="submitReservation()">[ WYŚLIJ REQUEST REZERWACJI ]</button>
+    <button (click)="fetchReservations()">[ POBIERZ REZERWACJE ]</button>
+    
+    @if (reservations()) {
+      <pre style="margin-top: 10px;">{{ reservations() | json }}</pre>
+    }
   </div>
 
   <div class="section-divider">======================== [SEKCJA 3: DEVELOPER DEBUG CONSOLE] ========================</div>
