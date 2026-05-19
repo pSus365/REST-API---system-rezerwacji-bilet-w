@@ -1,8 +1,8 @@
 # Kompleksowy System Rezerwacji Biletów (REST API + Angular)
 
 ## Odnośniki do projektu
-* **Wideo demonstracyjne (YouTube):** `[https://youtu.be/fKj-lFuNa3A]`
-* **Repozytorium GitHub:** `[https://github.com/pSus365/spring-boot-ticket-reservation]`
+* **Wideo demonstracyjne (YouTube):** `https://youtu.be/fKj-lFuNa3A`
+* **Repozytorium GitHub:** `https://github.com/pSus365/spring-boot-ticket-reservation`
 ---
 
 ## Wstęp i Architektura Systemu
