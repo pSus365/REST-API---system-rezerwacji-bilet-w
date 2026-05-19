@@ -1,12 +1,11 @@
 # Kompleksowy System Rezerwacji Biletów (REST API + Angular)
 
-## 📌 Odnośniki do projektu
-* **Wideo demonstracyjne (YouTube):** `[TUTAJ_WKLEJ_LINK_DO_YOUTUBE]`
-* **Repozytorium GitHub:** [https://github.com/pSus365/REST-API---system-rezerwacji-bilet-w.git](https://github.com/pSus365/REST-API---system-rezerwacji-bilet-w.git)
-
+## Odnośniki do projektu
+* **Wideo demonstracyjne (YouTube):** `[https://youtu.be/fKj-lFuNa3A]`
+* **Repozytorium GitHub:** `[https://github.com/pSus365/spring-boot-ticket-reservation]`
 ---
 
-## 🏗 Wstęp i Architektura Systemu
+## Wstęp i Architektura Systemu
 
 Zaprojektowałem i zaimplementowałem ten projekt w modelu architektury rozproszonej opartej na wzorcu klient-serwer. Po stronie serwerowej stworzyłem wydajne, bezstanowe (Stateless) REST API, a część kliencką zrealizowałem w architekturze Single Page Application (SPA).
 
@@ -15,7 +14,7 @@ Aplikację backendową oparłem o architekturę warstwową (Layered Architecture
 * **Warstwa Logiki Biznesowej (Service):** W niej zawarłem główną "mądrość" systemu (np. matematyczne kalkulacje dostępności biletów i transakcyjność).
 * **Warstwa Persystencji (Repository):** Wykorzystałem interfejsy `JpaRepository`, by komunikować się z bazą danych bez pisania czystego kodu SQL.
 
-## 🛠 Stos Technologiczny
+## Stos Technologiczny
 
 W moim systemie wykorzystałem następujące, nowoczesne technologie:
 * **Backend:** Java 21, Spring Boot (Web, Data JPA, Security, AMQP), Jakarta Validation.
@@ -24,25 +23,25 @@ W moim systemie wykorzystałem następujące, nowoczesne technologie:
 * **Testowanie:** JUnit 5, Mockito.
 * **Frontend:** Angular 17+ (architektura Standalone Components oraz Signals).
 
-## 🔐 Bezpieczeństwo i Autoryzacja
+## Bezpieczeństwo i Autoryzacja
 
 Zrezygnowałem z konwencjonalnej autoryzacji bazującej na sesjach na rzecz tokenów JWT (JSON Web Tokens). System jest w pełni bezstanowy. Hasła użytkowników zapisuję do bazy po wcześniejszym zahaszowaniu silnym algorytmem kryptograficznym `BCryptPasswordEncoder`.
 
 Napisałem własny filtr przechwytujący `JwtAuthenticationFilter`, który w locie analizuje nadchodzące żądania (z nagłówkiem `Authorization: Bearer <token>`). Jeśli sygnatura JWT jest prawidłowa, samodzielnie odtwarzam kontekst zabezpieczeń (`SecurityContextHolder`), dopuszczając użytkownika do chronionych zasobów (takich jak tworzenie rezerwacji czy ich pobieranie).
 
-## 🔄 Komunikacja Asynchroniczna i Kolejki (RabbitMQ)
+## Komunikacja Asynchroniczna i Kolejki (RabbitMQ)
 
 Aby system nie marnował zasobów i nie blokował głównego wątku HTTP podczas ciężkich operacji w tle (takich jak wysyłka wiadomości e-mail z wygenerowanym biletem PDF), wdrożyłem architekturę sterowaną zdarzeniami (Event-Driven Architecture) za pomocą RabbitMQ.
 
 Po zatwierdzeniu nowej transakcji w bazie danych, w moim serwisie `ReservationService` wołam klasę `RabbitTemplate`, która publikuje wiadomość na kolejkę. Zaimplementowałem również klasę nasłuchującą `ReservationListener` z adnotacją `@RabbitListener`, która w sposób odseparowany, w tle konsumuje te wiadomości, symulując czasochłonną wysyłkę e-maila i ostatecznie zamykając status rezerwacji jako `CONFIRMED`.
 
-## 🛡 Strategia Walidacji i Obsługi Błędów
+## Strategia Walidacji i Obsługi Błędów
 
 Nie pozwoliłem, by do moich serwisów biznesowych wpadały przypadkowe, brudne dane od strony frontendu (tzw. podejście Fail-Fast). Odseparowałem modele bazy danych od tego, co przyjmuje kontroler, używając obiektów DTO (Data Transfer Objects). W DTO zaimplementowałem ostre zasady z pakietu `jakarta.validation` (np. `@Min(value = 1)` dla ilości biletów czy `@NotNull`).
 
 Aby obsługa wyjątków nie robiła bałaganu w kontrolerach, zbudowałem klasę `GlobalExceptionHandler` korzystając ze wzorca `@RestControllerAdvice`. To jedno scentralizowane miejsce, które wyłapuje każdy wyjątek zrzucony w aplikacji (np. brak wystarczającej puli biletów, złe dane w formularzu) i automatycznie tłumaczy go na estetyczny obiekt JSON z precyzyjnym statusem HTTP (np. 400 Bad Request, 404 Not Found), zabezpieczając integralność odpowiedzi z serwera.
 
-## 🗄 Model Bazy Danych i Logika (CRUD)
+## Model Bazy Danych i Logika (CRUD)
 
 Zaimplementowałem warstwę persystencji z użyciem dostawcy Hibernate ORM. Wymodelowałem relacyjną bazę danych składającą się z trzech głównych encji:
 1. `AppUser` - Przechowuje dane kont, role systemowe oraz zaszyfrowane hasła.
@@ -51,13 +50,13 @@ Zaimplementowałem warstwę persystencji z użyciem dostawcy Hibernate ORM. Wymo
 
 Każdorazowo przy wywołaniu POST na endpoint `/api/reservations` realizuję pełny zapis CRUD-owy. System wyciąga encję wydarzenia, sprawdza, czy wolnych biletów jest więcej niż żądana wartość, pomniejsza pule dostępności, zapisuje modyfikację w repozytorium, po czym inicjuje obiekt rezerwacji w statusie `PENDING`. Zapewnia to stabilność i odporność na wyprzedaż puli biletów powyżej dostępnego limitu.
 
-## ⚙️ Testy Jednostkowe
+## Testy Jednostkowe
 
 Do weryfikacji bezbłędności logiki biznesowej, na której opiera się aplikacja (czyli m.in. walidacja liczby biletów), napisałem izolowane testy jednostkowe dla klasy `ReservationServiceTest`. Wykorzystałem framework JUnit 5 oraz bibliotekę Mockito do zamockowania działania repozytoriów Springa, co gwarantuje pełną, hermetyczną weryfikację logiki aplikacji bez obciążającego polegania na bazie danych.
 
 ---
 
-## 🚀 Instrukcja Uruchomienia (Krok po Kroku)
+## Instrukcja Uruchomienia (Krok po Kroku)
 
 Dzięki odpowiedniej konfiguracji projektu i skryptom deweloperskim, całe środowisko jest bardzo łatwe w instalacji.
 
