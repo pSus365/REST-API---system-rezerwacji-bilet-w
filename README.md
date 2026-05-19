@@ -1,71 +1,93 @@
-# System Rezerwacji Biletów (REST API)
+# Kompleksowy System Rezerwacji Biletów (REST API + Angular)
 
-Projekt zrealizowany w ramach zaliczenia na ocenę **5.0 (Bardzo dobry)**. Jest to kompletna aplikacja backendowa oparta na architekturze Spring Boot, oferująca pełen ekosystem rezerwacji biletów na wydarzenia.
+## 📌 Odnośniki do projektu
+* **Wideo demonstracyjne (YouTube):** `[TUTAJ_WKLEJ_LINK_DO_YOUTUBE]`
+* **Repozytorium GitHub:** [https://github.com/pSus365/REST-API---system-rezerwacji-bilet-w.git](https://github.com/pSus365/REST-API---system-rezerwacji-bilet-w.git)
 
-## Spełnione Kryteria
+---
 
-### Ocena 3.0
-- [x] **Działający Spring Boot**: Aplikacja uruchamia się bez błędów.
-- [x] **Połączenie z bazą danych**: Skonfigurowana in-memory baza H2.
-- [x] **CRUD dla encji**: Kompletne zarządzanie encją Rezerwacji (Reservation) oraz powiązanymi Użytkownikami i Wydarzeniami.
-- [x] **Demo video**: Prezentacja podstawowego działania (link w sekcji wymagań formalnych).
+## 🏗 Wstęp i Architektura Systemu
 
-### Ocena 4.0
-- [x] **Poprawna struktura warstwowa**: Logiczny podział na warstwy `Controller`, `Service`, `Repository`, `Model`, `DTO`.
-- [x] **DTO + Walidacja danych**: Obiekty transferowe dla requestów/response'ów oraz rygorystyczna walidacja przez `jakarta.validation` (`@Valid`, `@NotNull`, `@Min`, `@Email`).
-- [x] **Obsługa błędów**: Globalny `@RestControllerAdvice` (`GlobalExceptionHandler`) gwarantujący czyste odpowiedzi JSON z odpowiednimi kodami HTTP (np. 400, 404).
-- [x] **Security**: System logowania i rejestracji zabezpieczony algorytmem BCrypt oraz bezstanowa autoryzacja za pomocą tokenów **JWT**.
+Zaprojektowałem i zaimplementowałem ten projekt w modelu architektury rozproszonej opartej na wzorcu klient-serwer. Po stronie serwerowej stworzyłem wydajne, bezstanowe (Stateless) REST API, a część kliencką zrealizowałem w architekturze Single Page Application (SPA).
 
-### Ocena 5.0
-- [x] **Unit Testy**: Obejmujące warstwę serwisu napisane w **JUnit 5** z użyciem **Mockito**.
-- [x] **Events LUB Kolejki**: Wdrożono **RabbitMQ**. Tworzenie rezerwacji wysyła wiadomość na kolejkę, co symuluje asynchroniczną wysyłkę biletów na e-mail i ostateczne potwierdzanie rezerwacji przez Listenery.
-- [x] **Czysty kod**: Brak "zapachów" kodu, prawidłowe wstrzykiwanie zależności, separacja odpowiedzialności.
-- [x] **Frontend**: Oczekiwana aplikacja w Angularze (implementowana jako osobny projekt kliencki).
+Aplikację backendową oparłem o architekturę warstwową (Layered Architecture), aby zapewnić separację odpowiedzialności (SoC - Separation of Concerns):
+* **Warstwa Prezentacji (Controller):** Przechwytuje żądania HTTP od klienta i deleguje zadania głębiej.
+* **Warstwa Logiki Biznesowej (Service):** W niej zawarłem główną "mądrość" systemu (np. matematyczne kalkulacje dostępności biletów i transakcyjność).
+* **Warstwa Persystencji (Repository):** Wykorzystałem interfejsy `JpaRepository`, by komunikować się z bazą danych bez pisania czystego kodu SQL.
 
-## Technologie i Architektura
+## 🛠 Stos Technologiczny
 
-* **Java** (kompatybilność z nowymi wersjami)
-* **Spring Boot** (Web, Data JPA, Security, AMQP, Validation)
-* **Baza danych**: H2 Database
-* **Kolejki komunikatów**: RabbitMQ
-* **Zabezpieczenia**: Spring Security + JWT (`io.jsonwebtoken`) + BCryptPasswordEncoder
-* **Testowanie**: JUnit 5, Mockito
-* **Narzędzia pomocnicze**: Lombok, Maven
+W moim systemie wykorzystałem następujące, nowoczesne technologie:
+* **Backend:** Java 21, Spring Boot (Web, Data JPA, Security, AMQP), Jakarta Validation.
+* **Baza danych:** H2 Database (relacyjna baza działająca in-memory, emulująca środowisko docelowe).
+* **Komunikacja asynchroniczna:** RabbitMQ (uruchamiany jako kontener Docker).
+* **Testowanie:** JUnit 5, Mockito.
+* **Frontend:** Angular 17+ (architektura Standalone Components oraz Signals).
 
-## Dokumentacja Uruchomienia
+## 🔐 Bezpieczeństwo i Autoryzacja
 
-### Wymagania wstępne
-1. Zainstalowane środowisko **Java** (JDK).
-2. Zainstalowany **Maven**.
-3. Działający serwer **RabbitMQ**. Najszybciej uruchomić go za pomocą dockera:
-   ```bash
-   docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
-   ```
+Zrezygnowałem z konwencjonalnej autoryzacji bazującej na sesjach na rzecz tokenów JWT (JSON Web Tokens). System jest w pełni bezstanowy. Hasła użytkowników zapisuję do bazy po wcześniejszym zahaszowaniu silnym algorytmem kryptograficznym `BCryptPasswordEncoder`.
 
-### Kroki do uruchomienia
-1. Sklonuj repozytorium:
-   ```bash
-   git clone https://github.com/pSus365/REST-API---system-rezerwacji-bilet-w.git
-   cd REST-API---system-rezerwacji-bilet-w
-   ```
-2. Zbuduj aplikację:
-   ```bash
-   mvn clean install
-   ```
-3. Uruchom serwer Spring Boot:
-   ```bash
-   mvn spring-boot:run
-   ```
-4. Aplikacja nasłuchuje domyślnie na porcie `8080`.
-5. *Opcjonalnie*: Konsola bazy danych H2 dostępna jest pod adresem: `http://localhost:8080/h2-console` (dostęp został wyłączony spod ochrony JWT w SecurityConfig).
+Napisałem własny filtr przechwytujący `JwtAuthenticationFilter`, który w locie analizuje nadchodzące żądania (z nagłówkiem `Authorization: Bearer <token>`). Jeśli sygnatura JWT jest prawidłowa, samodzielnie odtwarzam kontekst zabezpieczeń (`SecurityContextHolder`), dopuszczając użytkownika do chronionych zasobów (takich jak tworzenie rezerwacji czy ich pobieranie).
 
-## Endpointy API i Autoryzacja
+## 🔄 Komunikacja Asynchroniczna i Kolejki (RabbitMQ)
 
-**Endpointy otwarte (Publiczne):**
-* `POST /api/auth/register` - Rejestracja nowego użytkownika. Wymaga podania username, e-maila i hasła.
-* `POST /api/auth/login` - Logowanie. Zwraca wygenerowany token JWT.
+Aby system nie marnował zasobów i nie blokował głównego wątku HTTP podczas ciężkich operacji w tle (takich jak wysyłka wiadomości e-mail z wygenerowanym biletem PDF), wdrożyłem architekturę sterowaną zdarzeniami (Event-Driven Architecture) za pomocą RabbitMQ.
 
-**Endpointy chronione (Wymagają nagłówka `Authorization: Bearer <token>`):**
-* `POST /api/reservations` - Tworzenie nowej rezerwacji. API weryfikuje token, sprawdza logikę biletów, aktualizuje bazę i asynchronicznie deleguje resztę do RabbitMQ.
-* `GET /api/reservations/{id}` - Pobieranie potwierdzonej rezerwacji.
+Po zatwierdzeniu nowej transakcji w bazie danych, w moim serwisie `ReservationService` wołam klasę `RabbitTemplate`, która publikuje wiadomość na kolejkę. Zaimplementowałem również klasę nasłuchującą `ReservationListener` z adnotacją `@RabbitListener`, która w sposób odseparowany, w tle konsumuje te wiadomości, symulując czasochłonną wysyłkę e-maila i ostatecznie zamykając status rezerwacji jako `CONFIRMED`.
 
+## 🛡 Strategia Walidacji i Obsługi Błędów
+
+Nie pozwoliłem, by do moich serwisów biznesowych wpadały przypadkowe, brudne dane od strony frontendu (tzw. podejście Fail-Fast). Odseparowałem modele bazy danych od tego, co przyjmuje kontroler, używając obiektów DTO (Data Transfer Objects). W DTO zaimplementowałem ostre zasady z pakietu `jakarta.validation` (np. `@Min(value = 1)` dla ilości biletów czy `@NotNull`).
+
+Aby obsługa wyjątków nie robiła bałaganu w kontrolerach, zbudowałem klasę `GlobalExceptionHandler` korzystając ze wzorca `@RestControllerAdvice`. To jedno scentralizowane miejsce, które wyłapuje każdy wyjątek zrzucony w aplikacji (np. brak wystarczającej puli biletów, złe dane w formularzu) i automatycznie tłumaczy go na estetyczny obiekt JSON z precyzyjnym statusem HTTP (np. 400 Bad Request, 404 Not Found), zabezpieczając integralność odpowiedzi z serwera.
+
+## 🗄 Model Bazy Danych i Logika (CRUD)
+
+Zaimplementowałem warstwę persystencji z użyciem dostawcy Hibernate ORM. Wymodelowałem relacyjną bazę danych składającą się z trzech głównych encji:
+1. `AppUser` - Przechowuje dane kont, role systemowe oraz zaszyfrowane hasła.
+2. `Event` - Obiekt wydarzenia (m.in nazwa, dokładna data i całkowita / dostępna pula biletów).
+3. `Reservation` - Tabela pośrednicząca zachowująca relację One-To-Many w stronę użytkowników oraz wydarzeń.
+
+Każdorazowo przy wywołaniu POST na endpoint `/api/reservations` realizuję pełny zapis CRUD-owy. System wyciąga encję wydarzenia, sprawdza, czy wolnych biletów jest więcej niż żądana wartość, pomniejsza pule dostępności, zapisuje modyfikację w repozytorium, po czym inicjuje obiekt rezerwacji w statusie `PENDING`. Zapewnia to stabilność i odporność na wyprzedaż puli biletów powyżej dostępnego limitu.
+
+## ⚙️ Testy Jednostkowe
+
+Do weryfikacji bezbłędności logiki biznesowej, na której opiera się aplikacja (czyli m.in. walidacja liczby biletów), napisałem izolowane testy jednostkowe dla klasy `ReservationServiceTest`. Wykorzystałem framework JUnit 5 oraz bibliotekę Mockito do zamockowania działania repozytoriów Springa, co gwarantuje pełną, hermetyczną weryfikację logiki aplikacji bez obciążającego polegania na bazie danych.
+
+---
+
+## 🚀 Instrukcja Uruchomienia (Krok po Kroku)
+
+Dzięki odpowiedniej konfiguracji projektu i skryptom deweloperskim, całe środowisko jest bardzo łatwe w instalacji.
+
+### Krok 1: Inicjalizacja Message Brokera (RabbitMQ)
+Moja aplikacja wymaga dostępu do kolejki RabbitMQ. Najszybciej uruchomisz ją przy wykorzystaniu narzędzia Docker:
+```bash
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+```
+*(Broker wystartuje na porcie 5672, a konsolę zarządzania znajdziesz pod adresem http://localhost:15672).*
+
+### Krok 2: Uruchomienie Serwera (Backend)
+Z poziomu głównego katalogu (tam gdzie widoczny jest plik `pom.xml`) zbuduj i uruchom Spring Boota za pomocą Mavena:
+```bash
+mvn clean install
+mvn spring-boot:run
+```
+*(Od tego momentu backend nasłuchuje portu 8080. Aplikacja dzięki mojej klasie `DataInitializer` automatycznie zaimplementuje w bazie w locie domyślnego użytkownika **admin** z hasłem **admin** oraz przykładowe wydarzenia).*
+
+### Krok 3: Uruchomienie Klienckiej Aplikacji (Frontend)
+Otwórz drugie, niezależne okno terminala i przejdź do folderu `frontend`. Uruchom polecenia NPM:
+```bash
+cd frontend
+npm install
+npm start
+```
+*(Interfejs graficzny uruchomi się w środowisku deweloperskim na porcie 4200).*
+
+### Krok 4: Korzystanie z systemu
+1. Wejdź na adres `http://localhost:4200`.
+2. Zaloguj się wpisując: `admin` / `admin`. Otrzymasz token JWT.
+3. Kliknij **[ POBIERZ WYDARZENIA ]**, wybierz wydarzenie z nowo wygenerowanej rozwijanej listy, ustal liczbę biletów i zrealizuj rezerwację!
+4. Wykorzystaj przycisk **[ POBIERZ REZERWACJE ]**, aby sprawdzić ich faktyczny, zapisany stan w systemie.
+5. (Opcjonalnie) Konsola in-memory H2 z podglądem mojej bazy danych działa pod URL: `http://localhost:8080/h2-console` (URL: `jdbc:h2:mem:ticketdb`, Username: `sa`, bez hasła).
